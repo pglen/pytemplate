@@ -8,7 +8,7 @@ import random, stat
 
 from mainwin import  *
 
-sys.path.append('../common')
+sys.path.append('../pycommon')
 from pgutils import  *
 
 

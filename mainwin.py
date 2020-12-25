@@ -5,18 +5,20 @@ import os, sys, getopt, signal, random, time, warnings
 from pymenu import  *
 from pgui import *
 
-sys.path.append('../common')
+sys.path.append('../pycommon')
 
 from pgutils import  *
 from pggui import  *
 
 import gi
 gi.require_version("Gtk", "3.0")
+
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GLib
 from gi.repository import GObject
 from gi.repository import Pango
+from gi.repository import Gio
 
 # ------------------------------------------------------------------------
 
@@ -27,6 +29,9 @@ class MainWin(Gtk.Window):
         Gtk.Window.__init__(self, Gtk.WindowType.TOPLEVEL)
 
         #self = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+
+        self.show_menu = True
+        self.show_tbar = True
 
         register_stock_icons()
 
@@ -57,17 +62,6 @@ class MainWin(Gtk.Window):
         else:
             self.set_default_size(7*www/8, 7*hhh/8)
 
-
-        '''self.set_flags(Gtk.CAN_FOCUS | Gtk.SENSITIVE)
-
-        self.set_events(  Gdk.POINTER_MOTION_MASK |
-                            Gdk.POINTER_MOTION_HINT_MASK |
-                            Gdk.BUTTON_PRESS_MASK |
-                            Gdk.BUTTON_RELEASE_MASK |
-                            Gdk.KEY_PRESS_MASK |
-                            Gdk.KEY_RELEASE_MASK |
-                            Gdk.FOCUS_CHANGE_MASK )
-        '''
         self.connect("destroy", self.OnExit)
         self.connect("key-press-event", self.key_press_event)
         self.connect("button-press-event", self.button_press_event)
@@ -77,7 +71,58 @@ class MainWin(Gtk.Window):
         except:
             pass
 
-        vbox = Gtk.VBox(); hbox4 = Gtk.HBox()
+        self.headbar = Gtk.HeaderBar()
+        self.headbar.set_decoration_layout("icon,menu:minimize,maximize,close")
+        self.headbar.set_show_close_button(True)
+
+        self.menu = MenuButt(("Open", "Close", "Exit"), self.menu_click)
+        self.headbar.pack_start(Gtk.Label())
+        self.headbar.pack_start(self.menu)
+        self.headbar.pack_start(Gtk.Label())
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        Gtk.StyleContext.add_class(box.get_style_context(), "linked")
+
+        button = Gtk.Button()
+        button.connect("pressed", self.xmail)
+        button.set_tooltip_text("You may configure whatever you want ...")
+        icon = Gio.ThemedIcon(name="mail-send-receive-symbolic")
+        image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.BUTTON)
+        button.add(image)
+
+        self.headbar.pack_end(button)
+
+        button = Gtk.Button()
+        button.add(Gtk.Arrow(Gtk.ArrowType.DOWN, Gtk.ShadowType.NONE))
+        button.set_tooltip_text("Show / Hide Toolbar")
+        box.add(button)
+        box.add(Gtk.Label(" "))
+        button.connect("pressed", self.ttt)
+
+        button = Gtk.Button()
+        button.add(Gtk.Arrow(Gtk.ArrowType.DOWN, Gtk.ShadowType.NONE))
+        button.connect("pressed", self.mmm)
+        button.set_tooltip_text("Show / Hide menu")
+        box.add(button)
+        box.add(Gtk.Label(" "))
+        box.add(Gtk.Label(" "))
+
+        button = Gtk.Button()
+        button.add(Gtk.Arrow(Gtk.ArrowType.LEFT, Gtk.ShadowType.NONE))
+        button.connect("pressed", self.bleft)
+        box.add(button)
+        box.add(Gtk.Label(" "))
+
+        button = Gtk.Button()
+        button.add(Gtk.Arrow(Gtk.ArrowType.RIGHT, Gtk.ShadowType.NONE))
+        button.connect("pressed", self.bright)
+        box.add(button)
+
+        self.headbar.pack_start(box)
+
+        self.set_titlebar(self.headbar)
+
+        vbox4 = Gtk.VBox(); hbox4 = Gtk.HBox()
 
         merge = Gtk.UIManager()
         #self.mywin.set_data("ui-manager", merge)
@@ -103,8 +148,7 @@ class MainWin(Gtk.Window):
         bbox.pack_start(self.mbar, 0,0, 0)
         bbox.pack_start(self.tbar, 0,0, 0)
 
-        vbox.pack_start(bbox, False, 0, 0)
-
+        vbox4.pack_start(bbox, False, 0, 0)
 
         lab1 = Gtk.Label("");  hbox4.pack_start(lab1, 1, 1, 0)
 
@@ -121,17 +165,62 @@ class MainWin(Gtk.Window):
         hbox2 = Gtk.HBox()
         lab3 = Gtk.Label("");  hbox2.pack_start(lab3, 0, 0, 0)
         lab4 = Gtk.Label("");  hbox2.pack_start(lab4, 0, 0, 0)
-        vbox.pack_start(hbox2, False, 0, 0)
+        vbox4.pack_start(hbox2, False, 0, 0)
 
         hbox3 = Gtk.HBox()
         self.edit = SimpleEdit();
         hbox3.pack_start(self.edit, True, True, 6)
-        vbox.pack_start(hbox3, True, True, 2)
+        vbox4.pack_start(hbox3, True, True, 2)
 
-        vbox.pack_start(hbox4, False, 0, 6)
+        vbox4.pack_start(hbox4, False, 0, 6)
 
-        self.add(vbox)
+        self.add(vbox4)
         self.show_all()
+
+    def xmail(self, arg):
+        print("xmail")
+        pass
+
+    def opendoc(self, arg):
+        print("opendoc")
+        pass
+
+    def closedoc(self, arg):
+        print("closedoc")
+        pass
+
+    def menu_click(self, item, arg):
+        #print("menu_click", item, arg)
+        if "pen" in item:
+            self.opendoc()
+
+        if "lose" in item:
+            self.closedoc()
+
+        if "xit" in item:
+            self.activate_exit()
+
+    def ttt(self, butt):
+        self.show_tbar = not self.show_tbar
+        if self.show_tbar:
+            self.tbar.show()
+        else:
+            self.tbar.hide()
+
+    def mmm(self, butt):
+        self.show_menu = not self.show_menu
+        if self.show_menu:
+            self.mbar.show()
+        else:
+            self.mbar.hide()
+
+    def bleft(self, butt):
+        print("bleft")
+        pass
+
+    def bright(self, butt):
+        print("bright")
+        pass
 
     def  OnExit(self, arg, srg2 = None):
         self.exit_all()
@@ -140,11 +229,11 @@ class MainWin(Gtk.Window):
         Gtk.main_quit()
 
     def key_press_event(self, win, event):
-        print( "key_press_event", win, event)
+        #print( "key_press_event", win, event)
         pass
 
     def button_press_event(self, win, event):
-        print( "button_press_event", win, event)
+        #print( "button_press_event", win, event)
         pass
 
     def activate_action(self, action):
