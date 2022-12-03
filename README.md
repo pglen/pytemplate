@@ -1,0 +1,1 @@
+# Tempate for pygobject GUI
