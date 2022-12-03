@@ -1,16 +1,13 @@
-#!/usr/bin/env python
-
-from __future__ import absolute_import
-from __future__ import print_function
+#!/usr/bin/env python3
 
 import os, sys, getopt, signal, select, socket, time, struct
 import random, stat
 
-from mainwin import  *
-
 sys.path.append('../pycommon')
-from pgutils import  *
+sys.path.append('guilib')
 
+from mainwin import  *
+from pgutil import  *
 
 # ------------------------------------------------------------------------
 # Globals
@@ -40,15 +37,15 @@ def pversion():
 
     # option, var_name, initial_val, function
 optarr = \
-    ["d:",  "pgdebug",  0,      None],      \
-    ["p:",  "port",     9999,   None],      \
-    ["v",   "verbose",  0,      None],      \
-    ["q",   "quiet",    0,      None],      \
-    ["t",   "test",     "x",    None],      \
-    ["V",   None,       None,   pversion],  \
-    ["h",   None,       None,   phelp]      \
+    ["d:",  "debug=",   "pgdebug",  0,      None],      \
+    ["p:",  "port=",    "port",     9999,   None],      \
+    ["v",   "verbose",  "verbose",  0,      None],      \
+    ["q",   "quiet",    "quiet",    0,      None],      \
+    ["t",   "test",     "test",     "x",    None],      \
+    ["V",   "version",  None,       None,   pversion],  \
+    ["h",   "help",     None,       None,   phelp]      \
 
-conf = Config(optarr)
+conf = ConfigLong(optarr)
 
 if __name__ == '__main__':
 
@@ -58,13 +55,4 @@ if __name__ == '__main__':
     Gtk.main()
     sys.exit(0)
 
-
-
-
-
-
-
-
-
-
-
+# EOF
