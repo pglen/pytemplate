@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 
-from __future__ import absolute_import
-from __future__ import print_function
-
 import os, sys, getopt, signal, random, time, warnings
 
 from pymenu import  *
-
-sys.path.append('../../pycommon')
-
-from pgutil import  *
 from pgui import  *
+
+from pyvguicom import pgutils
+
+#print(os.path.dirname(pgutils.__file__))
+sys.path.append(os.path.dirname(pgutils.__file__))
+from pyvguicom import pggui
 
 import gi
 gi.require_version("Gtk", "3.0")
@@ -24,9 +23,12 @@ from gi.repository import Pango
 
 class MainWin(Gtk.Window):
 
-    def __init__(self):
+    def __init__(self, conf = None):
 
         self.cnt = 0
+        self.conf = conf
+        self.stattime =  0
+
         Gtk.Window.__init__(self, Gtk.WindowType.TOPLEVEL)
 
         #self = Gtk.Window(Gtk.WindowType.TOPLEVEL)
@@ -108,9 +110,9 @@ class MainWin(Gtk.Window):
         vbox.pack_start(bbox, 0, 0, 0)
 
         hbox2 = Gtk.HBox()
-        lab3 = Gtk.Label(" 1 ");  hbox2.pack_start(lab3, 0, 0, 0)
+        lab3 = Gtk.Label("  ");  hbox2.pack_start(lab3, 0, 0, 0)
         lab4 = Gtk.Label("Top");  hbox2.pack_start(lab4, 1, 1, 0)
-        lab5 = Gtk.Label(" 2 ");  hbox2.pack_start(lab5, 0, 0, 0)
+        lab5 = Gtk.Label("  ");  hbox2.pack_start(lab5, 0, 0, 0)
         vbox.pack_start(hbox2, False, 0, 0)
 
         hbox3 = Gtk.HBox()
@@ -121,10 +123,10 @@ class MainWin(Gtk.Window):
         vbox.pack_start(hbox3, True, True, 2)
 
         hbox4 = Gtk.HBox()
-        lab1 = Gtk.Label(" 3 ");  hbox4.pack_start(lab1, 0, 0, 0)
+        lab1 = Gtk.Label("  ");  hbox4.pack_start(lab1, 0, 0, 0)
 
         # buttom row
-        lab2a = Gtk.Label(" buttom ");  hbox4.pack_start(lab2a, 1, 1, 0)
+        lab2a = Gtk.Label("  ");  hbox4.pack_start(lab2a, 1, 1, 0)
         lab2a.set_xalign(0)
         self.status = lab2a
 
@@ -136,7 +138,7 @@ class MainWin(Gtk.Window):
         butt2.connect("clicked", self.OnExit, self)
         hbox4.pack_start(butt2, False, 0, 2)
 
-        lab2b = Gtk.Label(" 5 ");  hbox4.pack_start(lab2b, 0, 0, 0)
+        lab2b = Gtk.Label("  ");  hbox4.pack_start(lab2b, 0, 0, 0)
 
         vbox.pack_start(hbox4, False, 0, 6)
 
@@ -146,7 +148,6 @@ class MainWin(Gtk.Window):
         GLib.timeout_add(200, self.load)
         GLib.timeout_add(1000, self.timer)
 
-
     def  OnExit(self, arg, srg2 = None):
         self.exit_all()
 
@@ -154,11 +155,11 @@ class MainWin(Gtk.Window):
         Gtk.main_quit()
 
     def key_press_event(self, win, event):
-        print( "key_press_event", win, event)
+        #print( "key_press_event", win, event)
         pass
 
     def button_press_event(self, win, event):
-        print( "button_press_event", win, event)
+        #print( "button_press_event", win, event)
         pass
 
     def activate_action(self, action):
@@ -189,20 +190,29 @@ class MainWin(Gtk.Window):
         pass
 
     def load(self):
-        print("Called load")
-        self.status.set_text("Status text for load")
+        #print("Called load")
+        self.set_status("Status text for load")
 
     def timer(self):
         #print("Called timer")
-        self.status.set_text("Status timer %d" % self.cnt)
-        self.cnt += 1
+        if self.stattime == 1:
+            self.status.set_text("Idle. ")
+        if self.stattime:
+            self.stattime -= 1
         return True
+
+    def set_status(self, txt):
+        self.status.set_text(txt)
+        self.stattime = 1 + len(txt) // 4
+
+    def run(self):
+        Gtk.main()
 
 # Start of program:
 
 if __name__ == '__main__':
 
     mainwin = MainWin()
-    Gtk.main()
+    mainwin.run()
 
 # EOF

@@ -3,11 +3,11 @@
 import os, sys, getopt, signal, select, socket, time, struct
 import random, stat
 
-sys.path.append('../pycommon')
-sys.path.append('guilib')
+#sys.path.append('../pycommon')
 
+sys.path.append('guilib')
 from mainwin import  *
-from pgutil import  *
+#from pyvguicom import pgutils
 
 # ------------------------------------------------------------------------
 # Globals
@@ -35,9 +35,9 @@ def pversion():
     print( os.path.basename(sys.argv[0]), "Version", version)
     sys.exit(0)
 
-    # option, var_name, initial_val, function
+    # option, var_name, initial_val, function, help
 optarr = \
-    ["d:",  "debug=",   "pgdebug",  0,      None],      \
+    ["d:",  "debug=",   "pgdebug",  0,      None, "Help"],      \
     ["p:",  "port=",    "port",     9999,   None],      \
     ["v",   "verbose",  "verbose",  0,      None],      \
     ["q",   "quiet",    "quiet",    0,      None],      \
@@ -45,14 +45,14 @@ optarr = \
     ["V",   "version",  None,       None,   pversion],  \
     ["h",   "help",     None,       None,   phelp]      \
 
-conf = ConfigLong(optarr)
+conf = pgutils.ConfigLong(optarr)
 
 if __name__ == '__main__':
 
     global mw
     args = conf.comline(sys.argv[1:])
     mw = MainWin()
-    Gtk.main()
+    mw.run()
     sys.exit(0)
 
 # EOF
