@@ -23,24 +23,25 @@ from gi.repository import Pango
 
 class MainWin(Gtk.Window):
 
-    def __init__(self, conf = None):
+    def __init__(self, kw, conf = None):
 
+        self.kw = kw
         self.cnt = 0
         self.conf = conf
         self.stattime =  0
 
-        Gtk.Window.__init__(self, Gtk.WindowType.TOPLEVEL)
-
-        #self = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        Gtk.Window.__init__(self, type=Gtk.WindowType.TOPLEVEL)
 
         #Gtk.register_stock_icons()
 
-        self.set_title("Template")
+        self.set_title("Kiosk")
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
 
-        #ic = Gtk.Image(); ic.set_from_stock(Gtk.STOCK_DIALOG_INFO, Gtk.ICON_SIZE_BUTTON)
+        #ic = Gtk.Image();
+        #ic.set_from_stock(Gtk.STOCK_DIALOG_INFO, Gtk.ICON_SIZE_BUTTON)
         #window.set_icon(ic.get_pixbuf())
 
+        warnings.simplefilter("ignore")
         www = Gdk.Screen.width(); hhh = Gdk.Screen.height();
 
         disp2 = Gdk.Display()
@@ -57,15 +58,14 @@ class MainWin(Gtk.Window):
         if www == 0 or hhh == 0:
             www = Gdk.screen_width(); hhh = Gdk.screen_height();
 
-        if www / hhh > 2:
-            self.set_default_size(5*www/8, 7*hhh/8)
+        if conf.fullscr:
+            self.set_default_size(www, hhh)
+            self.fullscreen()
         else:
-            self.set_default_size(7*www/8, 7*hhh/8)
+            self.set_default_size(6*www/8, 6*hhh/8)
 
-
-        '''self.set_flags(Gtk.CAN_FOCUS | Gtk.SENSITIVE)
-
-        self.set_events(  Gdk.POINTER_MOTION_MASK |
+        warnings.simplefilter("default")
+        ''' self.set_events(  Gdk.POINTER_MOTION_MASK |
                             Gdk.POINTER_MOTION_HINT_MASK |
                             Gdk.BUTTON_PRESS_MASK |
                             Gdk.BUTTON_RELEASE_MASK |
@@ -76,6 +76,7 @@ class MainWin(Gtk.Window):
         self.connect("destroy", self.OnExit)
         self.connect("key-press-event", self.key_press_event)
         self.connect("button-press-event", self.button_press_event)
+        self.connect("configure_event", self.configure_event)
 
         try:
             self.set_icon_from_file("icon.png")
@@ -84,6 +85,7 @@ class MainWin(Gtk.Window):
 
         vbox = Gtk.VBox();
 
+        warnings.simplefilter("ignore")
         merge = Gtk.UIManager()
         #self.mywin.set_data("ui-manager", merge)
 
@@ -103,50 +105,67 @@ class MainWin(Gtk.Window):
 
         self.tbar = merge.get_widget("/ToolBar");
         #self.tbar.show()
+        warnings.simplefilter("default")
 
-        bbox = Gtk.VBox()
-        bbox.pack_start(self.mbar, 0, 0, 0)
-        bbox.pack_start(self.tbar, 0, 0, 0)
-        vbox.pack_start(bbox, 0, 0, 0)
+        if not conf.fullscr:
+            bbox = Gtk.VBox()
+            bbox.pack_start(self.mbar, 0, 0, 0)
+            bbox.pack_start(self.tbar, 0, 0, 0)
+            vbox.pack_start(bbox, 0, 0, 0)
 
         hbox2 = Gtk.HBox()
-        lab3 = Gtk.Label("  ");  hbox2.pack_start(lab3, 0, 0, 0)
-        lab4 = Gtk.Label("Top");  hbox2.pack_start(lab4, 1, 1, 0)
-        lab5 = Gtk.Label("  ");  hbox2.pack_start(lab5, 0, 0, 0)
-        vbox.pack_start(hbox2, False, 0, 0)
+        if not conf.fullscr:
+            lab3 = Gtk.Label(label="  ");  hbox2.pack_start(lab3, 0, 0, 0)
+            #lab4 = Gtk.Label(label="Top");  hbox2.pack_start(lab4, 1, 1, 0)
+            lab5 = Gtk.Label(label="  ");  hbox2.pack_start(lab5, 0, 0, 0)
+            vbox.pack_start(hbox2, False, 0, 0)
 
         hbox3 = Gtk.HBox()
         #self.edit = SimpleEdit();
-        self.edit = Gtk.Label(" Main ")
-        hbox3.pack_start(self.edit, True, True, 6)
+        #self.edit = Gtk.Label(label=" Main ")
+        #hbox3.pack_start(self.edit, True, True, 6)
+        hbox3.pack_start(self.kw, True, True, 2)
 
-        vbox.pack_start(hbox3, True, True, 2)
+        vbox.pack_start(hbox3, True, True, 0)
 
         hbox4 = Gtk.HBox()
-        lab1 = Gtk.Label("  ");  hbox4.pack_start(lab1, 0, 0, 0)
+        lab1 = Gtk.Label(label="  ");  hbox4.pack_start(lab1, 0, 0, 0)
 
         # buttom row
-        lab2a = Gtk.Label("  ");  hbox4.pack_start(lab2a, 1, 1, 0)
+        lab2a = Gtk.Label(label="  ");  hbox4.pack_start(lab2a, 1, 1, 0)
         lab2a.set_xalign(0)
         self.status = lab2a
 
-        butt1 = Gtk.Button.new_with_mnemonic("    _New    ")
-        #butt1.connect("clicked", self.show_new, window)
+        butt0 = Gtk.Button.new_with_mnemonic("    _New    ")
+        #butt1.connect("clicked", self.show_new)
+        hbox4.pack_start(butt0, False, 0, 2)
+
+        butt1 = Gtk.Button.new_with_mnemonic("    _Reload    ")
+        butt1.connect("clicked", self.reload)
         hbox4.pack_start(butt1, False, 0, 2)
 
         butt2 = Gtk.Button.new_with_mnemonic("    E_xit    ")
         butt2.connect("clicked", self.OnExit, self)
         hbox4.pack_start(butt2, False, 0, 2)
 
-        lab2b = Gtk.Label("  ");  hbox4.pack_start(lab2b, 0, 0, 0)
+        lab2b = Gtk.Label(label="  ");  hbox4.pack_start(lab2b, 0, 0, 0)
 
-        vbox.pack_start(hbox4, False, 0, 6)
+        if not conf.fullscr:
+            vbox.pack_start(hbox4, False, 0, 6)
 
         self.add(vbox)
         self.show_all()
 
         GLib.timeout_add(200, self.load)
         GLib.timeout_add(1000, self.timer)
+
+    def reload(self, butt):
+        #print("reload", butt)
+        self.kw.reload(butt)
+
+    def configure_event(self, win, event):
+        #print("configure_event", win, event)
+        pass
 
     def  OnExit(self, arg, srg2 = None):
         self.exit_all()
@@ -191,7 +210,8 @@ class MainWin(Gtk.Window):
 
     def load(self):
         #print("Called load")
-        self.set_status("Status text for load")
+        #self.set_status("Status text for load")
+        pass
 
     def timer(self):
         #print("Called timer")
@@ -199,6 +219,7 @@ class MainWin(Gtk.Window):
             self.status.set_text("Idle. ")
         if self.stattime:
             self.stattime -= 1
+
         return True
 
     def set_status(self, txt):

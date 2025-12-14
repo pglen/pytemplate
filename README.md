@@ -1,1 +1,3 @@
-# Tempate for pygobject GUI
+# PyKiosk
+
+## Kiosk language and GUI
